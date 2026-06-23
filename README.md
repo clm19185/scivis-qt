@@ -14,29 +14,23 @@ as TorchScript. The C++ application loads the model via LibTorch and visualizes:
 - The decision regions (precomputed inference grid)
 - Real-time inference at the mouse cursor position
 
+Two frontends are provided, both backed by the same C++ data layer (`ScatterData`):
+- **Qt Widgets** — custom rendering via `QPainter`
+- **QML** — custom rendering via `Canvas` and JavaScript
+
 ## Stack
 
 - **C++17** — core application
-- **Qt6 Widgets + QPainter** — UI and custom rendering
+- **Qt6 Widgets + QPainter** — Widgets frontend
+- **Qt6 QML + Canvas** — QML frontend
 - **LibTorch** — PyTorch C++ API for model inference
 - **Python + PyTorch** — model training and TorchScript export
 
-## Project structure
-scivis-qt/
-├── src/                  # C++ source
-│   ├── main.cpp
-│   ├── ScatterWidget.h
-│   └── ScatterWidget.cpp
-├── ml/                   # Python scripts
-│   └── train_and_export.py
-├── models/               # TorchScript model (not tracked by git)
-├── data/                 # Generated dataset (not tracked by git)
-└── CMakeLists.txt
 
 ## Build
 
 ### Prerequisites
-- Qt6 (`qt6-base-dev`)
+- Qt6 (`qt6-base-dev`, `qt6-declarative-dev`)
 - LibTorch (CPU) — download from pytorch.org, extract locally
 - CMake >= 3.16, GCC with C++17
 - Python 3.9+ with PyTorch (for model training)
@@ -49,7 +43,7 @@ scivis-qt/
 mkdir build && cd build
 cmake .. 
 make
-./scivisQt
+./scivis-qt
 ```
 
 ### Generate model and data
@@ -60,8 +54,8 @@ python3 ../ml/train_and_export.py
 
 ## Roadmap
 - Precise decision boundary (binary search + path propagation)
-- Dynamic grid resolution
-- QML version
+- Dynamic grid resolution and window resizing
+- Axes with graduation
 - Multi-class support
 - `setRange()` for configurable axis bounds
 - `classColor()` for extensible class-to-color mapping
