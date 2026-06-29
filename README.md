@@ -52,10 +52,18 @@ cd models
 python3 ../ml/train_and_export.py
 ```
 
+## What's in v0.1
+
+- Qt Widgets frontend (QPainter)
+- QML frontend (Canvas)
+- Shared C++ backend (ScatterData)
+- Decision region grid (precomputed LibTorch inference)
+- Axes, ticks, grid lines and labels
+- Real-time cursor inference with tooltip
+
 ## Roadmap
 - Precise decision boundary (binary search + path propagation)
 - Dynamic grid resolution and window resizing
-- Axes with graduation
 - Multi-class support
 - `setRange()` for configurable axis bounds
 - `classColor()` for extensible class-to-color mapping
