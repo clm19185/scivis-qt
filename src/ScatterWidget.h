@@ -37,5 +37,11 @@ private:
   QPointF dataToScreen(float x, float y) const;
   QPointF screenToData(const QPointF& screen) const;
 
+  // Rendering helpers called from paintEvent
   void drawAxes(QPainter& painter) const;
+  void drawGrid(QPainter& painter) const;
+  void drawPoints(QPainter& painter) const;
+  void drawCursor(QPainter& painter) const;
+  void drawLegend(QPainter& painter) const;
+  void drawTitle(QPainter& painter) const;
 };

@@ -17,85 +17,13 @@ ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
 void ScatterWidget::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
-  painter.fillRect(rect(), Qt::black);
-
+  painter.fillRect(rect(), Qt::black); //black background
   drawAxes(painter);
-
-  // Decision region grid. Precomputed  in ScatterData, one color per cell
-  QVariantList grid = m_scatterData->grid();
-  if (!grid.empty()) {
-    int gridSize = m_scatterData->gridSize();
-    const float cellW = (float)(width()  - 2 * k_margin) / gridSize;
-    const float cellH = (float)(height() - 2 * k_margin) / gridSize;
-    for (int row = 0; row < gridSize; ++row) {
-      for (int col = 0; col < gridSize; ++col) {
-	int cls = grid[row * gridSize + col].toInt();
-	QColor color = (cls == 0) ? QColor(0, 0, 150, 80) : QColor(150, 0, 0, 80);
-	painter.fillRect(QRectF(k_margin + col * cellW, k_margin + row * cellH, cellW, cellH), color);
-      }
-    }
-  }
-  
-  // Data points. Colored by ground truth label
-  QVariantList points = m_scatterData->points();
-  if (points.empty()) return;
-
-  for (const auto& pt : points) {
-    QVariantMap p = pt.toMap();
-    QPointF pos = dataToScreen(p["x"].toFloat(), p["y"].toFloat());
-    painter.setBrush(p["label"].toInt() == 0 ? Qt::blue : Qt::red);
-    painter.setPen(Qt::NoPen);
-    painter.drawEllipse(pos, k_pointRadius, k_pointRadius);
-  }
-
-  // Cursor tooltip. Data coordinates and predicted class color
-  if (m_cursorClass >= 0) {
-    QColor color = m_cursorClass == 0 ? Qt::blue : Qt::red;
-    
-    QString line1 = QString("(%1, %2)")
-      .arg(m_cursorDataPos.x(), 0, 'f', 2)
-      .arg(m_cursorDataPos.y(), 0, 'f', 2);
-    
-    painter.setFont(QFont("Monospace", 9));
-    QFontMetrics fm(painter.font());
-    int textW = fm.horizontalAdvance(line1) + 8;
-    int textH = fm.height() + 4;
-
-    // Position tooltip to stay within widget bounds
-    int boxX = m_cursor.x() < width()  / 2 ? m_cursor.x() + 10 : m_cursor.x() - textW - 10;
-    int boxY = m_cursor.y() < height() / 2 ? m_cursor.y() + 10 : m_cursor.y() - textH - 10;
-
-    QRect box(boxX, boxY, textW, textH);
-    painter.setBrush(Qt::NoBrush);
-    painter.fillRect(box, color);
-    painter.setPen(QPen(Qt::white, 1));
-    painter.drawRect(box);
-    painter.drawText(box.adjusted(4, 2, -4, -2), Qt::AlignLeft | Qt::AlignTop, line1);
-  }
-  
-  // Title
-  painter.setPen(Qt::white);
-  painter.setFont(QFont("Monospace", 11, QFont::Bold));
-  painter.drawText(QRect(0, 0, width(), k_margin),
-		   Qt::AlignHCenter | Qt::AlignVCenter,
-		   "Decision boundary — LibTorch + Qt");
-
-  // Legend
-  painter.setFont(QFont("Monospace", 9));
-  int legendX = k_margin;
-  int legendY = height() - k_margin / 2;
-
-  painter.setBrush(Qt::blue);
-  painter.setPen(Qt::NoPen);
-  painter.drawEllipse(QPointF(legendX, legendY), 5, 5);
-  painter.setPen(Qt::white);
-  painter.drawText(QPointF(legendX + 10, legendY + 4), "Class 0");
-
-  painter.setBrush(Qt::red);
-  painter.setPen(Qt::NoPen);
-  painter.drawEllipse(QPointF(legendX + 80, legendY), 5, 5);
-  painter.setPen(Qt::white);
-  painter.drawText(QPointF(legendX + 90, legendY + 4), "Class 1");
+  drawGrid(painter);
+  drawPoints(painter);
+  drawCursor(painter);
+  drawTitle(painter);
+  drawLegend(painter);
 }
 
 void ScatterWidget::mouseMoveEvent(QMouseEvent* event)
@@ -189,4 +117,91 @@ void ScatterWidget::drawAxes(QPainter& painter) const
   painter.drawText(QPointF(origin.x() + k_tickSize + 2, origin.y() + fm.height()), "0");
 }
 
+void ScatterWidget::drawGrid(QPainter& painter) const
+{
+  // Decision region grid is precomputed  in ScatterData with one color per cell
+  QVariantList grid = m_scatterData->grid();
+  if (!grid.empty()) {
+    int gridSize = m_scatterData->gridSize();
+    const float cellW = (float)(width()  - 2 * k_margin) / gridSize;
+    const float cellH = (float)(height() - 2 * k_margin) / gridSize;
+    for (int row = 0; row < gridSize; ++row) {
+      for (int col = 0; col < gridSize; ++col) {
+	int cls = grid[row * gridSize + col].toInt();
+	QColor color = (cls == 0) ? QColor(0, 0, 150, 80) : QColor(150, 0, 0, 80);
+	painter.fillRect(QRectF(k_margin + col * cellW, k_margin + row * cellH, cellW, cellH), color);
+      }
+    }
+  }
+}
 
+void ScatterWidget::drawPoints(QPainter& painter) const
+{
+  // Data points are colored by ground truth label
+  QVariantList points = m_scatterData->points();
+  if (points.empty()) return;
+
+  for (const auto& pt : points) {
+    QVariantMap p = pt.toMap();
+    QPointF pos = dataToScreen(p["x"].toFloat(), p["y"].toFloat());
+    painter.setBrush(p["label"].toInt() == 0 ? Qt::blue : Qt::red);
+    painter.setPen(Qt::NoPen);
+    painter.drawEllipse(pos, k_pointRadius, k_pointRadius);
+  }
+}
+
+void ScatterWidget::drawCursor(QPainter& painter) const
+{
+  // Cursor tooltip has data coordinates and predicted class color
+  if (m_cursorClass >= 0) {
+    QColor color = m_cursorClass == 0 ? Qt::blue : Qt::red;
+    
+    QString line1 = QString("(%1, %2)")
+      .arg(m_cursorDataPos.x(), 0, 'f', 2)
+      .arg(m_cursorDataPos.y(), 0, 'f', 2);
+    
+    painter.setFont(QFont("Monospace", 9));
+    QFontMetrics fm(painter.font());
+    int textW = fm.horizontalAdvance(line1) + 8;
+    int textH = fm.height() + 4;
+
+    // Position tooltip to stay within widget bounds
+    int boxX = m_cursor.x() < width()  / 2 ? m_cursor.x() + 10 : m_cursor.x() - textW - 10;
+    int boxY = m_cursor.y() < height() / 2 ? m_cursor.y() + 10 : m_cursor.y() - textH - 10;
+
+    QRect box(boxX, boxY, textW, textH);
+    painter.setBrush(Qt::NoBrush);
+    painter.fillRect(box, color);
+    painter.setPen(QPen(Qt::white, 1));
+    painter.drawRect(box);
+    painter.drawText(box.adjusted(4, 2, -4, -2), Qt::AlignLeft | Qt::AlignTop, line1);
+  }
+}
+
+void ScatterWidget::drawTitle(QPainter& painter) const
+{
+  painter.setPen(Qt::white);
+  painter.setFont(QFont("Monospace", 11, QFont::Bold));
+  painter.drawText(QRect(0, 0, width(), k_margin),
+		   Qt::AlignHCenter | Qt::AlignVCenter,
+		   "Decision boundary — LibTorch + Qt");
+}
+
+void ScatterWidget::drawLegend(QPainter& painter) const
+{
+  painter.setFont(QFont("Monospace", 9));
+  int legendX = k_margin;
+  int legendY = height() - k_margin / 2;
+
+  painter.setBrush(Qt::blue);
+  painter.setPen(Qt::NoPen);
+  painter.drawEllipse(QPointF(legendX, legendY), 5, 5);
+  painter.setPen(Qt::white);
+  painter.drawText(QPointF(legendX + 10, legendY + 4), "Class 0");
+
+  painter.setBrush(Qt::red);
+  painter.setPen(Qt::NoPen);
+  painter.drawEllipse(QPointF(legendX + 80, legendY), 5, 5);
+  painter.setPen(Qt::white);
+  painter.drawText(QPointF(legendX + 90, legendY + 4), "Class 1");
+}
