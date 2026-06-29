@@ -11,7 +11,6 @@ ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
 {
   setFixedSize(k_windowSize, k_windowSize);
   setMouseTracking(true);  // receive mouseMoveEvent without button press
-  setCursor(Qt::CrossCursor);
 }
 
 void ScatterWidget::paintEvent(QPaintEvent* event)
@@ -29,6 +28,18 @@ void ScatterWidget::paintEvent(QPaintEvent* event)
 void ScatterWidget::mouseMoveEvent(QMouseEvent* event)
 {
   m_cursor = event->position();
+  
+  // Only show cursor tooltip inside the data area
+  if (m_cursor.x() < k_margin || m_cursor.x() > width()  - k_margin ||
+      m_cursor.y() < k_margin || m_cursor.y() > height() - k_margin)
+  {
+    m_cursorClass = -1;
+    setCursor(Qt::ArrowCursor);
+    update();
+    return;
+  }
+
+  setCursor(Qt::CrossCursor);
   m_cursorDataPos = screenToData(event->position());
   m_cursorClass = m_scatterData->predict(m_cursorDataPos.x(), m_cursorDataPos.y());
   update();

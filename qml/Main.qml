@@ -205,11 +205,22 @@ Window {
      MouseArea {
         anchors.fill: parent
         hoverEnabled: true  
-	cursorShape: Qt.CrossCursor
+	cursorShape: (mouseX < 40 || mouseX > width - 40 ||
+                      mouseY < 40 || mouseY > height - 40)
+                      ? Qt.ArrowCursor : Qt.CrossCursor
 
         onPositionChanged: {
-            // Convert screen coordinates to data coordinates
             var margin = 40
+
+	    // Only show cursor tooltip inside the data area
+    	    if (mouseX < margin || mouseX > width  - margin ||
+               	mouseY < margin || mouseY > height - margin) {
+        	canvas.cursorClass = -1
+        	canvas.requestPaint()
+        	return
+    	    }
+	    
+            // Convert screen coordinates to data coordinates
             var dataX = scatterData.xMin + (mouseX - margin) / (width - 2 * margin) * (scatterData.xMax - scatterData.xMin)
             var dataY = scatterData.yMin + (1.0 - (mouseY - margin) / (height - 2 * margin)) * (scatterData.yMax - scatterData.yMin)
             
