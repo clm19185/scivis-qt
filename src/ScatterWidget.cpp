@@ -3,6 +3,7 @@
 #include <QMouseEvent>
 #include <QFont>
 #include <QFontMetrics>
+#include <cmath>
 
 ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
   :  QWidget(parent),
@@ -17,6 +18,8 @@ void ScatterWidget::paintEvent(QPaintEvent* event)
 {
   QPainter painter(this);
   painter.fillRect(rect(), Qt::black);
+
+  drawAxes(painter);
 
   // Decision region grid. Precomputed  in ScatterData, one color per cell
   QVariantList grid = m_scatterData->grid();
@@ -118,6 +121,72 @@ QPointF ScatterWidget::screenToData(const QPointF& screen) const
   float dataX = m_scatterData->xMin() + (screen.x() - k_margin) / (width()  - 2 * k_margin) * (m_scatterData->xMax() - m_scatterData->xMin());
   float dataY = m_scatterData->yMin() + (1.0f - (screen.y() - k_margin) / (height() - 2 * k_margin)) * (m_scatterData->yMax() - m_scatterData->yMin());
   return QPointF(dataX, dataY);
+}
+
+void ScatterWidget::drawAxes(QPainter& painter) const
+{
+  painter.setPen(QPen(Qt::white, 1));
+  painter.setFont(QFont("Monospace", 8));
+  QFontMetrics fm(painter.font());
+
+  // Axis lines through (0, 0) in data coordinates
+  QPointF origin = dataToScreen(0.0f, 0.0f);
+  QPointF xLeft  = dataToScreen(m_scatterData->xMin(), 0.0f);
+  QPointF xRight = dataToScreen(m_scatterData->xMax(), 0.0f);
+  QPointF yTop   = dataToScreen(0.0f, m_scatterData->yMax());
+  QPointF yBot   = dataToScreen(0.0f, m_scatterData->yMin());
+
+  painter.drawLine(xLeft, xRight);  // X axis
+  painter.drawLine(yTop,  yBot);    // Y axis
+
+  // Ticks, labels and grid lines
+  for (float v = m_scatterData->xMin(); v <= m_scatterData->xMax(); v += k_tickInterval) {
+
+    // Vertical grid line
+    QPointF top = dataToScreen(v, m_scatterData->yMax());
+    QPointF bot = dataToScreen(v, m_scatterData->yMin());
+    painter.setPen(QPen(QColor(255, 255, 255, 30), 1));
+    painter.drawLine(top, bot);
+
+    // Tick on X axis
+    QPointF tickPos = dataToScreen(v, 0.0f);
+    painter.setPen(QPen(Qt::white, 1));
+    painter.drawLine(QPointF(tickPos.x(), tickPos.y() - k_tickSize),
+		     QPointF(tickPos.x(), tickPos.y() + k_tickSize));
+
+    // Label every k_labelInterval units
+    if (std::fmod(std::abs(v), k_labelInterval) < 0.01f && v != 0.0f) {
+      QString label = QString::number(v, 'f', 1);
+      int textW = fm.horizontalAdvance(label);
+      painter.drawText(QPointF(tickPos.x() - textW / 2, tickPos.y() + k_tickSize + fm.height()), label);
+    }
+  }
+
+  for (float v = m_scatterData->yMin(); v <= m_scatterData->yMax(); v += k_tickInterval) {
+
+    // Horizontal grid line
+    QPointF left  = dataToScreen(m_scatterData->xMin(), v);
+    QPointF right = dataToScreen(m_scatterData->xMax(), v);
+    painter.setPen(QPen(QColor(255, 255, 255, 30), 1));
+    painter.drawLine(left, right);
+
+    // Tick on Y axis
+    QPointF tickPos = dataToScreen(0.0f, v);
+    painter.setPen(QPen(Qt::white, 1));
+    painter.drawLine(QPointF(tickPos.x() - k_tickSize, tickPos.y()),
+		     QPointF(tickPos.x() + k_tickSize, tickPos.y()));
+
+    // Label every k_labelInterval units
+    if (std::fmod(std::abs(v), k_labelInterval) < 0.01f && v != 0.0f) {
+      QString label = QString::number(v, 'f', 1);
+      int textW = fm.horizontalAdvance(label);
+      painter.drawText(QPointF(tickPos.x() - textW - k_tickSize - 2, tickPos.y() + fm.height() / 2), label);
+    }
+  }
+
+  // Origin label
+  painter.setPen(Qt::white);
+  painter.drawText(QPointF(origin.x() + k_tickSize + 2, origin.y() + fm.height()), "0");
 }
 
 

@@ -40,8 +40,11 @@ Window {
 	    ctx.fillText("Decision boundary — LibTorch + Qt6 QML", width / 2, 24)
 	    ctx.textAlign = "left"  
 
-	    // Read backend data and constants
+	    // constants and backend data
 	    var margin = 40
+	    var tickInterval  = 1.0 // graduation spacing in data units
+	    var labelInterval = 2.0 // label spacing in data units
+	    var tickSize      = 4.0 // tick length in pixels
 	    var pts = scatterData.points
             var xMin = scatterData.xMin
             var xMax = scatterData.xMax
@@ -49,6 +52,84 @@ Window {
             var yMax = scatterData.yMax
 	    var gridSize = scatterData.gridSize
 	    var grid = scatterData.grid
+
+	    // Axis lines through (0, 0)
+	    var origin = { x: margin + (0 - xMin) / (xMax - xMin) * (width  - 2 * margin),
+               	       	   y: margin + (1.0 - (0 - yMin) / (yMax - yMin)) * (height - 2 * margin) }
+
+	    ctx.strokeStyle = "white"
+	    ctx.lineWidth = 1
+
+	    // X axis
+	    ctx.beginPath()
+	    ctx.moveTo(margin, origin.y)
+	    ctx.lineTo(width - margin, origin.y)
+	    ctx.stroke()
+
+	    // Y axis
+	    ctx.beginPath()
+	    ctx.moveTo(origin.x, margin)
+	    ctx.lineTo(origin.x, height - margin)
+	    ctx.stroke()
+
+	    // Ticks, grid lines and labels — X axis
+	    ctx.font = "10px monospace"
+	    for (var v = xMin; v <= xMax; v += tickInterval) {
+    	    	var sx = margin + (v - xMin) / (xMax - xMin) * (width - 2 * margin)
+
+    		// Vertical grid line
+    		ctx.strokeStyle = "rgba(255, 255, 255, 0.12)"
+   		ctx.beginPath()
+    		ctx.moveTo(sx, margin)
+    		ctx.lineTo(sx, height - margin)
+    		ctx.stroke()
+
+    		// Tick
+    		ctx.strokeStyle = "white"
+    		ctx.beginPath()
+    		ctx.moveTo(sx, origin.y - tickSize)
+   		ctx.lineTo(sx, origin.y + tickSize)
+   		ctx.stroke()
+
+    		// Label
+   		if (Math.abs(v % labelInterval) < 0.01 && Math.abs(v) > 0.01) {
+        	   var label = v.toFixed(1)
+        	   var labelW = ctx.measureText(label).width
+        	   ctx.fillStyle = "white"
+        	   ctx.fillText(label, sx - labelW / 2, origin.y + tickSize + 12)
+    		}
+	    }
+
+	    // Ticks, grid lines and labels — Y axis
+	    for (var vy = yMin; vy <= yMax; vy += tickInterval) {
+   	       var sy = margin + (1.0 - (vy - yMin) / (yMax - yMin)) * (height - 2 * margin)
+
+	       // Horizontal grid line
+	       ctx.strokeStyle = "rgba(255, 255, 255, 0.12)"
+    	       ctx.beginPath()
+    	       ctx.moveTo(margin, sy)
+    	       ctx.lineTo(width - margin, sy)
+    	       ctx.stroke()
+
+	       // Tick
+    	       ctx.strokeStyle = "white"
+    	       ctx.beginPath()
+    	       ctx.moveTo(origin.x - tickSize, sy)
+    	       ctx.lineTo(origin.x + tickSize, sy)
+    	       ctx.stroke()
+
+    	       // Label
+    	       if (Math.abs(vy % labelInterval) < 0.01 && Math.abs(vy) > 0.01) {
+               	  var labelY = vy.toFixed(1)
+        	  var labelWY = ctx.measureText(labelY).width
+        	  ctx.fillStyle = "white"
+        	  ctx.fillText(labelY, origin.x - labelWY - tickSize - 2, sy + 4)
+    		}
+	     }
+
+	     // Origin label
+	     ctx.fillStyle = "white"
+	     ctx.fillText("0", origin.x + tickSize + 2, origin.y + 12)
 
 	    // Decision region grid — one colored cell per inference result
 	    if(grid.length != 0) {

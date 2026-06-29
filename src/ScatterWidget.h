@@ -24,12 +24,18 @@ private:
   QPointF m_cursorDataPos; // cursor position in data coordinates
   int m_cursorClass = -1;  // predicted class (-1 = cursor outside widget)
 
-  // Display constants  — frontend-specific
+  // Display constants
   static constexpr int   k_windowSize = 600;
   static constexpr float k_pointRadius = 4.0f;
   static constexpr int k_margin = 40;
+  // Axes drawing constants
+  static constexpr float k_tickInterval  = 1.0f;  // graduation every unit
+  static constexpr float k_labelInterval = 2.0f;  // label every 2 units
+  static constexpr float k_tickSize      = 4.0f;  // tick length in pixels
 
   // Coordinate transforms between data space and screen space
   QPointF dataToScreen(float x, float y) const;
   QPointF screenToData(const QPointF& screen) const;
+
+  void drawAxes(QPainter& painter) const;
 };
