@@ -11,12 +11,19 @@ set(CMAKE_PREFIX_PATH "~/Software/libtorch")
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets Qml Quick)
 find_package(Torch REQUIRED)
 
-
 qt_add_executable(scivis-qt
   src/main.cpp
   src/ScatterWidget.cpp
   src/ScatterData.cpp
   )
+
+target_precompile_headers(scivis-qt PRIVATE
+    <torch/script.h>
+    <QWidget>
+    <QPainter>
+    <QVariant>
+    <QQmlApplicationEngine>
+)
 
 qt_add_qml_module(scivis-qt
   URI ScivisQt
