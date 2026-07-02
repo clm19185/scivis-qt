@@ -31,24 +31,15 @@ set(SCIVISQT_SOURCES
     src/ScatterData.cpp
 )
 if(SCIVISQT_ENABLE_WIDGETS)
-    list(APPEND SCIVISQT_SOURCES src/ScatterWidget.cpp)
+  list(APPEND SCIVISQT_SOURCES
+    src/ScatterWidget.cpp)
 endif()
 
 qt_add_executable(scivis-qt ${SCIVISQT_SOURCES})
 
-set(SCIVISQT_PCH_HEADERS
+target_precompile_headers(scivis-qt PRIVATE
     <torch/script.h>
-    <QVariant>
-    )
-  
-if(SCIVISQT_ENABLE_WIDGETS)
-    list(APPEND SCIVISQT_PCH_HEADERS <QWidget> <QPainter>)
-endif()
-if(SCIVISQT_ENABLE_QML)
-    list(APPEND SCIVISQT_PCH_HEADERS <QQmlApplicationEngine>)
-endif()
-
-target_precompile_headers(scivis-qt PRIVATE ${SCIVISQT_PCH_HEADERS})
+)
 
 if(SCIVISQT_ENABLE_QML)
   qt_add_qml_module(scivis-qt
