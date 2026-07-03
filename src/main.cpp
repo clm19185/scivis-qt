@@ -4,7 +4,7 @@
 #endif
 
 #ifdef ENABLE_WIDGETS
-#include "ScatterWidget.h"
+#include "MainWindow.h"
 #include <QApplication>
 #else
 #include <QGuiApplication>
@@ -32,18 +32,12 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef ENABLE_WIDGETS
-  // Qt Widgets frontend
-  ScatterWidget widget(&data);
-  widget.setWindowTitle("ScivisQt - Widgets");
-#endif
-
-  // Load data after both frontends are ready
+  MainWindow mainWindow(&data);
+  mainWindow.setWindowTitle("ScivisQt - Widgets");
+  mainWindow.show();
+#else
   data.loadModel("../models/model.pt");
   data.loadData("../data/points.csv");
-
-
-#ifdef ENABLE_WIDGETS
-  widget.show();
 #endif
 
   // Quit application when last window is closed

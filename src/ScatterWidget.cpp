@@ -11,6 +11,8 @@ ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
 {
   setFixedSize(k_windowSize, k_windowSize);
   setMouseTracking(true);  // receive mouseMoveEvent without button press
+  connect(m_scatterData, &ScatterData::pointsChanged, this, QOverload<>::of(&QWidget::update));
+  connect(m_scatterData, &ScatterData::gridChanged,   this, QOverload<>::of(&QWidget::update));
 }
 
 void ScatterWidget::paintEvent(QPaintEvent* event)

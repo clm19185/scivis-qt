@@ -32,7 +32,8 @@ set(SCIVISQT_SOURCES
 )
 if(SCIVISQT_ENABLE_WIDGETS)
   list(APPEND SCIVISQT_SOURCES
-    src/ScatterWidget.cpp)
+    src/ScatterWidget.cpp
+    src/MainWindow.cpp)
 endif()
 
 qt_add_executable(scivis-qt ${SCIVISQT_SOURCES})
