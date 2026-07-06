@@ -48,6 +48,7 @@ void ScatterData::loadModel(const QString& modelPath)
     qDebug() << "Model loaded: " << modelPath;
   } catch (const c10::Error& e) {
     qWarning() << "Failed to load model: " << e.what();
+    return;
   }
   computeGrid();
 }

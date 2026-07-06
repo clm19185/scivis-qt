@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
   MainWindow mainWindow(&data);
   mainWindow.setWindowTitle("ScivisQt - Widgets");
   mainWindow.show();
-#else
-  data.loadModel("../models/model.pt");
-  data.loadData("../data/points.csv");
+  mainWindow.move(100, 100);
+  mainWindow.raise();
+  //mainWindow.activateWindow();
 #endif
 
   // Quit application when last window is closed

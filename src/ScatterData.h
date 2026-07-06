@@ -24,10 +24,10 @@ class ScatterData : public QObject
   explicit ScatterData(QObject* parent = nullptr);
 
   // Load dataset from CSV file (x, y, label)
-  void loadData(const QString& csvPath);
+  Q_INVOKABLE void loadData(const QString& csvPath);
 
   // Load TorchScript model and precompute inference grid
-  void loadModel(const QString& modelPath);
+  Q_INVOKABLE void loadModel(const QString& modelPath);
 
   // Property getters — used by both QML and C++ frontends
   QVariantList points() const { return m_points; }
