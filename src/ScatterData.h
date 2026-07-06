@@ -14,7 +14,8 @@ class ScatterData : public QObject
  public:
   // Q_PROPERTY declarations — accessible from QML
   Q_PROPERTY(QVariantList points READ points NOTIFY pointsChanged)
-  Q_PROPERTY(QVariantList grid READ grid NOTIFY gridChanged)
+  Q_PROPERTY(int numClasses READ numClasses NOTIFY modelChanged)
+  Q_PROPERTY(QVariantList grid READ grid NOTIFY modelChanged)
   Q_PROPERTY(int gridSize READ gridSize CONSTANT)
   Q_PROPERTY(float xMin READ xMin CONSTANT)
   Q_PROPERTY(float xMax READ xMax CONSTANT)
@@ -31,6 +32,7 @@ class ScatterData : public QObject
 
   // Property getters — used by both QML and C++ frontends
   QVariantList points() const { return m_points; }
+  int numClasses() const  { return m_numClasses; }
   QVariantList grid() const { return m_grid; }
   int gridSize() const { return k_gridSize; }
   float xMin() const { return k_xMin; }
@@ -44,14 +46,15 @@ class ScatterData : public QObject
 
 Q_SIGNALS:
     void pointsChanged(); // emitted after loadData
-    void gridChanged();   // emitted after computeGrid
+    void modelChanged();   // emitted after loadModel
     
  private:
   QVariantList m_points; // dataset: list of {x, y, label} maps
   QVariantList m_grid;   // inference grid: flattened row-major, size k_gridSize * k_gridSize
   torch::jit::script::Module m_model;
   bool m_modelLoaded = false;
-
+  int m_numClasses = 0;
+  
   // Data space bounds — define the visible region for all frontends
   static constexpr float k_xMin = -6.0f;
   static constexpr float k_xMax =  6.0f;

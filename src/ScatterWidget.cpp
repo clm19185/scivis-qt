@@ -5,6 +5,15 @@
 #include <QFontMetrics>
 #include <cmath>
 
+// Okabe-Ito colorblind-friendly palette — Wong, B. Nature Methods 8:441 (2011)
+// Last entry is the default color for unknown classes
+const QColor ScatterWidget::k_classColors[] = {
+    QColor("#0072B2"),  // class 0 — blue
+    QColor("#D55E00"),  // class 1 — vermillion
+    QColor("#009E73"),  // class 2 — bluish green
+    QColor("#CC79A7")   // default — reddish purple
+};
+
 ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
   :  QWidget(parent),
      m_scatterData(data)
@@ -12,7 +21,7 @@ ScatterWidget::ScatterWidget(ScatterData* data, QWidget* parent)
   setFixedSize(k_windowSize, k_windowSize);
   setMouseTracking(true);  // receive mouseMoveEvent without button press
   connect(m_scatterData, &ScatterData::pointsChanged, this, QOverload<>::of(&QWidget::update));
-  connect(m_scatterData, &ScatterData::gridChanged,   this, QOverload<>::of(&QWidget::update));
+  connect(m_scatterData, &ScatterData::modelChanged,   this, QOverload<>::of(&QWidget::update));
 }
 
 void ScatterWidget::paintEvent(QPaintEvent* event)
@@ -45,6 +54,13 @@ void ScatterWidget::mouseMoveEvent(QMouseEvent* event)
   m_cursorDataPos = screenToData(event->position());
   m_cursorClass = m_scatterData->predict(m_cursorDataPos.x(), m_cursorDataPos.y());
   update();
+}
+
+QColor ScatterWidget::classColor(int cls) const
+{
+  if (cls < 0 || cls >= (int) std::size(k_classColors) - 1)
+    return k_classColors[std::size(k_classColors) - 1];
+  return k_classColors[cls];
 }
 
 QPointF ScatterWidget::dataToScreen(float x, float y) const
@@ -141,7 +157,8 @@ void ScatterWidget::drawGrid(QPainter& painter) const
     for (int row = 0; row < gridSize; ++row) {
       for (int col = 0; col < gridSize; ++col) {
 	int cls = grid[row * gridSize + col].toInt();
-	QColor color = (cls == 0) ? QColor(0, 0, 150, 80) : QColor(150, 0, 0, 80);
+	QColor color = classColor(cls);
+	color.setAlpha(80);
 	painter.fillRect(QRectF(k_margin + col * cellW, k_margin + row * cellH, cellW, cellH), color);
       }
     }
@@ -157,7 +174,7 @@ void ScatterWidget::drawPoints(QPainter& painter) const
   for (const auto& pt : points) {
     QVariantMap p = pt.toMap();
     QPointF pos = dataToScreen(p["x"].toFloat(), p["y"].toFloat());
-    painter.setBrush(p["label"].toInt() == 0 ? Qt::blue : Qt::red);
+    painter.setBrush(classColor(p["label"].toInt()));
     painter.setPen(Qt::NoPen);
     painter.drawEllipse(pos, k_pointRadius, k_pointRadius);
   }
@@ -167,7 +184,7 @@ void ScatterWidget::drawCursor(QPainter& painter) const
 {
   // Cursor tooltip has data coordinates and predicted class color
   if (m_cursorClass >= 0) {
-    QColor color = m_cursorClass == 0 ? Qt::blue : Qt::red;
+    QColor color = classColor(m_cursorClass);
     
     QString line1 = QString("(%1, %2)")
       .arg(m_cursorDataPos.x(), 0, 'f', 2)
@@ -205,16 +222,14 @@ void ScatterWidget::drawLegend(QPainter& painter) const
   painter.setFont(QFont("Monospace", 9));
   int legendX = k_margin;
   int legendY = height() - k_margin / 2;
+  int numClasses = m_scatterData->numClasses();
 
-  painter.setBrush(Qt::blue);
-  painter.setPen(Qt::NoPen);
-  painter.drawEllipse(QPointF(legendX, legendY), 5, 5);
-  painter.setPen(Qt::white);
-  painter.drawText(QPointF(legendX + 10, legendY + 4), "Class 0");
-
-  painter.setBrush(Qt::red);
-  painter.setPen(Qt::NoPen);
-  painter.drawEllipse(QPointF(legendX + 80, legendY), 5, 5);
-  painter.setPen(Qt::white);
-  painter.drawText(QPointF(legendX + 90, legendY + 4), "Class 1");
+  for (int cls = 0; cls < numClasses; ++cls) {
+    int offsetX = cls * 80;
+    painter.setBrush(classColor(cls));
+    painter.setPen(Qt::NoPen);
+    painter.drawEllipse(QPointF(legendX + offsetX, legendY), 5, 5);
+    painter.setPen(Qt::white);
+    painter.drawText(QPointF(legendX + offsetX + 10, legendY + 4), QString("Class %1").arg(cls));
+  }
 }

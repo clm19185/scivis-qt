@@ -84,7 +84,7 @@ ApplicationWindow {
         Connections {
             target: scatterData
             function onPointsChanged() { canvas.requestPaint() }
-            function onGridChanged() { canvas.requestPaint() }
+            function onModelChanged() { canvas.requestPaint() }
         }
 
 
@@ -94,6 +94,25 @@ ApplicationWindow {
 	property real cursorScreenX: -1 // cursor position in screen coordinates
 	property real cursorScreenY: -1 
         property int cursorClass: -1 // predicted class (-1 = outside widget)
+
+	//Class color selection
+	function classColor(cls) {
+    	  switch(cls) {
+              case 0:  return "#0072B2"
+              case 1:  return "#D55E00"
+              case 2:  return "#009E73"
+              default: return "#CC79A7"
+    	  }
+        }
+
+	function classColorGrid(cls) {
+            var color = classColor(cls)
+    	    // Convert #RRGGBB to rgba(r, g, b, 0.31)
+    	    var r = parseInt(color.slice(1, 3), 16)
+    	    var g = parseInt(color.slice(3, 5), 16)
+    	    var b = parseInt(color.slice(5, 7), 16)
+    	    return "rgba(" + r + ", " + g + ", " + b + ", 0.31)"
+        }
 
     	onPaint: {
             var ctx = getContext("2d")
@@ -207,7 +226,7 @@ ApplicationWindow {
     		for (var row = 0; row < gridSize; row++) {
       		for (var col = 0; col < gridSize; col++) {
 		    var cls = grid[row * gridSize + col]
-		    ctx.fillStyle = (cls == 0) ? "rgba(0, 0, 150, 0.31)" : "rgba(150, 0, 0, 0.31)"
+		    ctx.fillStyle = classColorGrid(cls)
 		    ctx.beginPath()
 		    ctx.rect(margin + col * cellW, margin + row * cellH, cellW, cellH)
 		    ctx.fill()
@@ -221,32 +240,29 @@ ApplicationWindow {
                 var px = margin + (p.x - xMin) / (xMax - xMin) * (width  - 2 * margin)
 		var py = margin + (1.0 - (p.y - yMin) / (yMax - yMin)) * (height - 2 * margin)
 
-                ctx.fillStyle = p.label === 0 ? "blue" : "red"
+                ctx.fillStyle = classColor(p.label)
                 ctx.beginPath()
                 ctx.arc(px, py, 4, 0, 2 * Math.PI)
                 ctx.fill()
             }
 
 	    // Legend
+	    var numClasses = scatterData.numClasses
 	    var legendX = margin
 	    var legendY = height - margin / 2
 
-	    ctx.fillStyle = "blue"
-	    ctx.beginPath()
-	    ctx.arc(legendX, legendY, 5, 0, 2 * Math.PI)
-	    ctx.fill()
-	    ctx.fillStyle = "white"
-	    ctx.font = "12px monospace"
-	    ctx.fillText("Class 0", legendX + 10, legendY + 4)
+	    for (var cls = 0; cls < numClasses; cls++) {
+	        var offsetX = cls * 80
+		ctx.fillStyle = classColor(cls)
+	        ctx.beginPath()
+	    	ctx.arc(legendX + offsetX, legendY, 5, 0, 2 * Math.PI)
+	    	ctx.fill()
+	    	ctx.fillStyle = "white"
+	    	ctx.font = "12px monospace"
+	    	ctx.fillText("Class "+ cls, legendX + offsetX + 10, legendY + 4)
+	    }
 
-	    ctx.fillStyle = "red"
-	    ctx.beginPath()
-	    ctx.arc(legendX + 80, legendY, 5, 0, 2 * Math.PI)
-	    ctx.fill()
-	    ctx.fillStyle = "white"
-	    ctx.fillText("Class 1", legendX + 90, legendY + 4)
-
-            // Cursor toolti. Data coordinates and predicted class color
+            // Cursor tooltip: Data coordinates and predicted class color
             if (cursorClass >= 0) {
 	       var text = "(" + cursorX.toFixed(2) + ", " + cursorY.toFixed(2) + ")"
 	       var textWidth = ctx.measureText(text).width
@@ -259,7 +275,7 @@ ApplicationWindow {
 	       var labelX = cursorScreenX < width  / 2 ? cursorScreenX + 10 : cursorScreenX - boxW - 10
 	       var labelY = cursorScreenY < height / 2 ? cursorScreenY + 10 : cursorScreenY - boxH - 10
 	       
-               ctx.fillStyle = cursorClass === 0 ? "blue" : "red"
+               ctx.fillStyle = classColor(cursorClass )
                ctx.fillRect(labelX, labelY, boxW, boxH)
 	       ctx.strokeStyle = "white"
     	       ctx.lineWidth = 1

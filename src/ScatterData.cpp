@@ -50,7 +50,15 @@ void ScatterData::loadModel(const QString& modelPath)
     qWarning() << "Failed to load model: " << e.what();
     return;
   }
+
+  // Infer number of classes from model output dimension
+  torch::Tensor dummy = torch::zeros({1, 2});
+  auto output = m_model.forward({dummy}).toTensor();
+  m_numClasses = output.size(1);
+  qDebug() << "Number of classes:" << m_numClasses;
+  
   computeGrid();
+  Q_EMIT modelChanged();
 }
 
 int ScatterData::predict(float x, float y)
@@ -86,5 +94,4 @@ void ScatterData::computeGrid()
     }
   }
   qDebug() << "Inference grid computed (" << k_gridSize << "x" << k_gridSize << ")";
-  Q_EMIT gridChanged();
 }
