@@ -4,6 +4,7 @@ project(ScivisQt)
 
 option(SCIVISQT_ENABLE_WIDGETS "Enable Qt Widgets frontend" ON)
 option(SCIVISQT_ENABLE_QML "Enable QML frontend" ON)
+option(SCIVISQT_BUILD_TESTS "Build unit tests" ON)
 
 if(NOT SCIVISQT_ENABLE_WIDGETS AND NOT SCIVISQT_ENABLE_QML)
     message(FATAL_ERROR "At least one frontend (Widgets or QML) must be enabled")
@@ -69,3 +70,9 @@ endif()
 if(SCIVISQT_ENABLE_QML)
     target_compile_definitions(scivis-qt PRIVATE ENABLE_QML)
 endif()
+
+if(SCIVISQT_BUILD_TESTS)
+  add_subdirectory(tests EXCLUDE_FROM_ALL)
+endif()
+
+ 

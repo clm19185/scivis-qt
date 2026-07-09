@@ -48,4 +48,8 @@ private:
   void drawCursor(QPainter& painter) const;
   void drawLegend(QPainter& painter) const;
   void drawTitle(QPainter& painter) const;
+
+#ifdef ENABLE_TESTS
+  friend class TstScatterWidget;
+#endif
 };
