@@ -10,8 +10,8 @@ private Q_SLOTS:
   void init();
   void cleanup();
 
-  void initTestCase() {}
-  void cleanupTestCase() {}
+  void initTestCase() {};
+  void cleanupTestCase() {};
   
   void tst_dataToScreen_roundtrip();
   void tst_screenToData_roundtrip();
