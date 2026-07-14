@@ -1,5 +1,6 @@
 #include "ScatterData.h"
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QDebug>
 
@@ -42,6 +43,13 @@ void ScatterData::loadData(const QString& csvPath)
 
 void ScatterData::loadModel(const QString& modelPath)
 {
+  QFileInfo fileInfo(modelPath);
+
+  if (!fileInfo.exists()) {
+    qWarning() << "Failed to load model: file does not exist:" << modelPath;
+    return;
+  }
+  
   try{
     m_model = torch::jit::load(modelPath.toStdString());
     m_modelLoaded = true;
