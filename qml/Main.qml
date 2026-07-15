@@ -3,6 +3,7 @@ import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import ScivisQt
 
 ApplicationWindow {
     width: 600
@@ -73,8 +74,13 @@ ApplicationWindow {
 	    statusMessage = "Data: " + selectedFile.toString().split("/").pop()
 	}
     }
+
+    ScatterView{
+	anchors.fill: parent
+        scatterData: scatterData
+    }
     
-    Canvas {
+    /*Canvas {
         anchors.fill: parent
 	//width: 600
         //height: 600
@@ -302,7 +308,7 @@ ApplicationWindow {
 	    drawLegend(ctx, margin)
 	    drawCursor(ctx)
 	}
-    }
+    }*/
      
     MouseArea {
         anchors.fill: parent

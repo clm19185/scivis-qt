@@ -39,18 +39,27 @@ endif()
 
 qt_add_executable(scivis-qt ${SCIVISQT_SOURCES})
 
-target_precompile_headers(scivis-qt PRIVATE
-    <torch/script.h>
-)
+#target_precompile_headers(scivis-qt PRIVATE
+#    <torch/script.h>
+#)
 
 if(SCIVISQT_ENABLE_QML)
   qt_add_qml_module(scivis-qt
     URI ScivisQt
     VERSION 1.0
+    
     QML_FILES
-      qml/Main.qml
-      )
-endif()    
+        qml/Main.qml
+    
+    SOURCES
+	src/ScatterView.cpp
+	src/ScatterView.h
+	)
+    endif()
+
+target_include_directories(scivis-qt PRIVATE
+  src
+)
 
 target_compile_definitions(scivis-qt PRIVATE QT_NO_KEYWORDS)
 
