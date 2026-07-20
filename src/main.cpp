@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   // QML engine. context must be set before loading QML,
     // so signals emitted during data loading are received by QML
   QQmlApplicationEngine engine;
-  engine.rootContext()->setContextProperty("scatterData", &data);
+  engine.rootContext()->setContextProperty("scatterBackend", &data);
   engine.load(QUrl("qrc:/ScivisQt/qml/Main.qml"));
 #endif
 
