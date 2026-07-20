@@ -12,10 +12,18 @@ class ScatterView : public QQuickPaintedItem
 public:
   Q_PROPERTY(ScatterData* scatterData READ scatterData 
 	     WRITE setScatterData NOTIFY scatterDataChanged)
+  Q_PROPERTY(QVariantList classColors READ classColors 
+	     WRITE setClassColors NOTIFY classColorsChanged)
   
   explicit ScatterView(QQuickItem* parent = nullptr);
+
+  
   ScatterData* scatterData() const { return m_data; }
+  QVariantList classColors() const { return m_classColors; }
+
   void setScatterData(ScatterData* data);
+  void setClassColors(const QVariantList& colors);
+  
   void paint(QPainter* painter) override;
 
 protected:
@@ -24,6 +32,7 @@ protected:
     
 Q_SIGNALS:
   void scatterDataChanged();
+  void classColorsChanged();
 
 private:
   ScatterData* m_data = nullptr;  // backend
@@ -42,7 +51,7 @@ private:
   static constexpr float k_labelInterval = 2.0f;  // label every 2 units
   static constexpr float k_tickSize      = 4.0f;  // tick length in pixels
   // Class color table indexed by class label
-  static const QColor k_classColors[];
+  QVariantList m_classColors;
 
   QColor classColor(int cls) const;
 

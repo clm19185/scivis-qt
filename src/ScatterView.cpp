@@ -2,19 +2,21 @@
 #include <QPainter>
 #include <QCursor>
 
-// Okabe-Ito colorblind-friendly palette — Wong, B. Nature Methods 8:441 (2011)
-// Last entry is the default color for unknown classes
-const QColor ScatterView::k_classColors[] = {
-  QColor("#0072B2"),  // class 0 — blue
-  QColor("#D55E00"),  // class 1 — vermillion
-  QColor("#009E73"),  // class 2 — bluish green
-  QColor("#CC79A7")   // default — reddish purple
-};
 
 ScatterView::ScatterView(QQuickItem* parent)
   : QQuickPaintedItem(parent)
 {
   setAcceptHoverEvents(true);
+
+  // Defaut Okabe-Ito colorblind-friendly palette — Wong, B. Nature Methods 8:441 (2011)
+  // Last entry is the default color for unknown classes
+  m_classColors = {
+    QString("#0072B2"),  // class 0 — blue
+    QString("#D55E00"),  // class 1 — vermillion
+    QString("#009E73"),  // class 2 — bluish green
+    QString("#CC79A7")   // default — reddish purple
+  };
+  
 }
 
 void ScatterView::setScatterData(ScatterData* data)
@@ -24,6 +26,14 @@ void ScatterView::setScatterData(ScatterData* data)
   connect(m_data, &ScatterData::modelChanged,  this, [this]{ update(); });
   connect(m_data, &ScatterData::pointsChanged, this, [this]{ update(); });
   Q_EMIT scatterDataChanged();
+  update();
+}
+
+void ScatterView::setClassColors(const QVariantList& colors)
+{
+  if (m_classColors == colors) return;
+  m_classColors = colors;
+  Q_EMIT classColorsChanged();
   update();
 }
 
@@ -68,9 +78,9 @@ void ScatterView::hoverLeaveEvent(QHoverEvent* event)
 
 QColor ScatterView::classColor(int cls) const
 {
-  if (cls < 0 || cls >= (int) std::size(k_classColors) - 1)
-    return k_classColors[std::size(k_classColors) - 1];
-  return k_classColors[cls];
+  int defaultIdx = m_classColors.size() - 1;
+  int idx = (cls >= 0 && cls < defaultIdx) ? cls : defaultIdx;
+  return QColor(m_classColors[idx].toString());
 }
 
 QPointF ScatterView::dataToScreen(float x, float y) const
