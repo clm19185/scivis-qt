@@ -75,9 +75,11 @@ ApplicationWindow {
     ScatterView{
 	anchors.fill: parent
         scatterData: scatterBackend
-	
-	//classColors: ["#0072B2", "#D55E00", "#009E73", "#CC79A7"]
-	classColors: ["#E69F00", "#56B4E9", "#CC79A7", "#808080"] 
+	//for testing
+	//margin: 70
+	//pointRadius: 8
+	//gridOpacity: 0.5
+	//classColors: ["#E69F00", "#56B4E9", "#CC79A7", "#808080"] 
     }
     
     footer: Label {

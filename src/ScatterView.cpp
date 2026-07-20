@@ -37,6 +37,30 @@ void ScatterView::setClassColors(const QVariantList& colors)
   update();
 }
 
+void ScatterView::setMargin(int margin)
+{
+  if (m_margin == margin) return;
+  m_margin = margin;
+  Q_EMIT marginChanged();
+  update();
+}
+
+void ScatterView::setPointRadius(float radius)
+{
+  if (qFuzzyCompare(m_pointRadius, radius)) return;
+  m_pointRadius = radius;
+  Q_EMIT pointRadiusChanged();
+  update();
+}
+
+void ScatterView::setGridOpacity(float opacity)
+{
+  if (qFuzzyCompare(m_gridOpacity, opacity)) return;
+  m_gridOpacity = opacity;
+  Q_EMIT gridOpacityChanged();
+  update();
+}
+
 void ScatterView::paint(QPainter* painter)
 {
   painter->fillRect(boundingRect(), Qt::black); //black background
@@ -56,8 +80,8 @@ void ScatterView::hoverMoveEvent(QHoverEvent* event)
 {
   m_cursor = event->position();
 
-  if (m_cursor.x() < k_margin || m_cursor.x() > width()  - k_margin ||
-      m_cursor.y() < k_margin || m_cursor.y() > height() - k_margin) {
+  if (m_cursor.x() < m_margin || m_cursor.x() > width()  - m_margin ||
+      m_cursor.y() < m_margin || m_cursor.y() > height() - m_margin) {
     m_cursorClass = -1;
     setCursor(QCursor(Qt::ArrowCursor));
     update();
@@ -85,15 +109,15 @@ QColor ScatterView::classColor(int cls) const
 
 QPointF ScatterView::dataToScreen(float x, float y) const
 {
-  float screenX = k_margin + (x - m_data->xMin()) / (m_data->xMax() - m_data->xMin()) * (width() - 2 * k_margin);
-  float screenY = k_margin + (1.0f - (y - m_data->yMin()) / (m_data->yMax() - m_data->yMin())) * (height() - 2 * k_margin);
+  float screenX = m_margin + (x - m_data->xMin()) / (m_data->xMax() - m_data->xMin()) * (width() - 2 * m_margin);
+  float screenY = m_margin + (1.0f - (y - m_data->yMin()) / (m_data->yMax() - m_data->yMin())) * (height() - 2 * m_margin);
   return QPointF(screenX, screenY);
 }
 
 QPointF ScatterView::screenToData(const QPointF& screen) const
 {
-  float dataX = m_data->xMin() + (screen.x() - k_margin) / (width()  - 2 * k_margin) * (m_data->xMax() - m_data->xMin());
-  float dataY = m_data->yMin() + (1.0f - (screen.y() - k_margin) / (height() - 2 * k_margin)) * (m_data->yMax() - m_data->yMin());
+  float dataX = m_data->xMin() + (screen.x() - m_margin) / (width()  - 2 * m_margin) * (m_data->xMax() - m_data->xMin());
+  float dataY = m_data->yMin() + (1.0f - (screen.y() - m_margin) / (height() - 2 * m_margin)) * (m_data->yMax() - m_data->yMin());
   return QPointF(dataX, dataY);
 }
 
@@ -170,15 +194,15 @@ void ScatterView::drawGrid(QPainter* painter) const
   if (grid.empty()) return;
 
   int gridSize = m_data->gridSize();
-  const float cellW = (float)(width()  - 2 * k_margin) / gridSize;
-  const float cellH = (float)(height() - 2 * k_margin) / gridSize;
+  const float cellW = (float)(width()  - 2 * m_margin) / gridSize;
+  const float cellH = (float)(height() - 2 * m_margin) / gridSize;
 
   for (int row = 0; row < gridSize; ++row) {
     for (int col = 0; col < gridSize; ++col) {
       int cls = grid[row * gridSize + col].toInt();
       QColor color = classColor(cls);
-      color.setAlpha(80);
-      painter->fillRect(QRectF(k_margin + col * cellW, k_margin + row * cellH, cellW, cellH), color);
+      color.setAlphaF(m_gridOpacity);
+      painter->fillRect(QRectF(m_margin + col * cellW, m_margin + row * cellH, cellW, cellH), color);
     }
   }
 }
@@ -194,7 +218,7 @@ void ScatterView::drawPoints(QPainter* painter) const
     QPointF pos = dataToScreen(p["x"].toFloat(), p["y"].toFloat());
     painter->setBrush(classColor(p["label"].toInt()));
     painter->setPen(Qt::NoPen);
-    painter->drawEllipse(pos, k_pointRadius, k_pointRadius);
+    painter->drawEllipse(pos, m_pointRadius, m_pointRadius);
   }
 }
 
@@ -230,7 +254,7 @@ void ScatterView::drawTitle(QPainter* painter) const
 {
   painter->setPen(Qt::white);
   painter->setFont(QFont("Monospace", 11, QFont::Bold));
-  painter->drawText(QRect(0, 0, width(), k_margin),
+  painter->drawText(QRect(0, 0, width(), m_margin),
 		    Qt::AlignHCenter | Qt::AlignVCenter,
 		    "Decision boundary — LibTorch + Qt");
 }
@@ -238,8 +262,8 @@ void ScatterView::drawTitle(QPainter* painter) const
 void ScatterView::drawLegend(QPainter* painter) const
 {
   painter->setFont(QFont("Monospace", 9));
-  int legendX = k_margin;
-  int legendY = height() - k_margin / 2;
+  int legendX = m_margin;
+  int legendY = height() - m_margin / 2;
   int numClasses = m_data->numClasses();
 
   for (int cls = 0; cls < numClasses; ++cls) {
