@@ -50,10 +50,11 @@ if(SCIVISQT_ENABLE_QML)
     
     QML_FILES
         qml/Main.qml
+        qml/ScatterView.qml
     
     SOURCES
-	src/ScatterView.cpp
-	src/ScatterView.h
+	src/ScatterViewBase.cpp
+	src/ScatterViewBase.h
 	)
     endif()
 

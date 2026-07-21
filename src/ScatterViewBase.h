@@ -4,7 +4,7 @@
 #include <qqmlregistration.h>
 #include "ScatterData.h"
 
-class ScatterView : public QQuickPaintedItem
+class ScatterViewBase : public QQuickPaintedItem
 {
   Q_OBJECT
   QML_ELEMENT
@@ -21,7 +21,7 @@ public:
   Q_PROPERTY(float gridOpacity  READ gridOpacity  
 	     WRITE setGridOpacity  NOTIFY gridOpacityChanged)
   
-  explicit ScatterView(QQuickItem* parent = nullptr);
+  explicit ScatterViewBase(QQuickItem* parent = nullptr);
 
   ScatterData* scatterData() const { return m_data; }
   QVariantList classColors() const { return m_classColors; }
