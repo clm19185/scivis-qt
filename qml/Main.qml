@@ -76,6 +76,7 @@ ApplicationWindow {
 	id: scatterView
 	anchors.fill: parent
         scatterData: scatterBackend
+	//title: "Custom title"
     }
     
     footer: Label {

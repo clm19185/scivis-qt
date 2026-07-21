@@ -57,7 +57,6 @@ private:
   int m_cursorClass = -1;  // predicted class (-1 = cursor outside widget)
   
   // Display constants
-  static constexpr int   k_windowSize = 600;
   float m_pointRadius = 4.0f;
   int m_margin = 40;
   float m_gridOpacity = 0.31f;
@@ -79,6 +78,4 @@ private:
   void drawGrid(QPainter* painter) const;
   void drawPoints(QPainter* painter) const;
   void drawCursor(QPainter* painter) const;
-  void drawLegend(QPainter* painter) const;
-  void drawTitle(QPainter* painter) const;
 };

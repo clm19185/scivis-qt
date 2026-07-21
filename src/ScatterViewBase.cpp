@@ -6,6 +6,8 @@
 ScatterViewBase::ScatterViewBase(QQuickItem* parent)
   : QQuickPaintedItem(parent)
 {
+  setRenderTarget(QQuickPaintedItem::FramebufferObject);
+  
   setAcceptHoverEvents(true);
 
   // Defaut Okabe-Ito colorblind-friendly palette — Wong, B. Nature Methods 8:441 (2011)
@@ -72,8 +74,6 @@ void ScatterViewBase::paint(QPainter* painter)
   drawGrid(painter);
   drawPoints(painter);
   drawCursor(painter);
-  drawTitle(painter);
-  drawLegend(painter);
 }
 
 void ScatterViewBase::hoverMoveEvent(QHoverEvent* event)
@@ -250,28 +250,3 @@ void ScatterViewBase::drawCursor(QPainter* painter) const
   }
 }
 
-void ScatterViewBase::drawTitle(QPainter* painter) const
-{
-  painter->setPen(Qt::white);
-  painter->setFont(QFont("Monospace", 11, QFont::Bold));
-  painter->drawText(QRect(0, 0, width(), m_margin),
-		    Qt::AlignHCenter | Qt::AlignVCenter,
-		    "Decision boundary — LibTorch + Qt");
-}
-
-void ScatterViewBase::drawLegend(QPainter* painter) const
-{
-  painter->setFont(QFont("Monospace", 9));
-  int legendX = m_margin;
-  int legendY = height() - m_margin / 2;
-  int numClasses = m_data->numClasses();
-
-  for (int cls = 0; cls < numClasses; ++cls) {
-    int offsetX = cls * 80;
-    painter->setBrush(classColor(cls));
-    painter->setPen(Qt::NoPen);
-    painter->drawEllipse(QPointF(legendX + offsetX, legendY), 5, 5);
-    painter->setPen(Qt::white);
-    painter->drawText(QPointF(legendX + offsetX + 10, legendY + 4), QString("Class %1").arg(cls));
-  }
-}
