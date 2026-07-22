@@ -5,8 +5,7 @@ Interactive scientific data visualization using C++, Qt6 and LibTorch.
 ## Overview
 
 Personal project started to explore the intersection of C++ UI development 
-and ML inference in a scientific visualization context. It is a first working prototype in active development, 
-deliberately kept simple, with more features planned.
+and ML inference in a scientific visualization context. It is a  working prototype in active development.
 
 A simple binary classifier is trained in Python on synthetic 2D data and exported 
 as TorchScript. The C++ application loads the model via LibTorch and visualizes:
@@ -16,15 +15,15 @@ as TorchScript. The C++ application loads the model via LibTorch and visualizes:
 
 Two frontends are provided, both backed by the same C++ data layer (`ScatterData`):
 - **Qt Widgets** — custom rendering via `QPainter`
-- **QML** — custom rendering via `Canvas` and JavaScript
+- **QML** — custom rendering via `QQuickPaintedItem` (`ScatterViewBase`), `ApplicationWindow` with toolbar
 
 ## Stack
 
 - **C++17** — core application
 - **Qt6 Widgets + QPainter** — Widgets frontend
-- **Qt6 QML + Canvas** — QML frontend
+- **Qt6 QML + QQuickPaintedItem** — QML frontend
 - **LibTorch** — PyTorch C++ API for model inference
-- **Python + PyTorch** — model training and TorchScript export
+- **Python + PyTorch + scikit-learn** — model training and TorchScript export
 
 
 ## Build
@@ -50,7 +49,8 @@ make
 ```bash
 cmake .. -DSCIVISQT_ENABLE_WIDGETS=OFF  # QML only
 cmake .. -DSCIVISQT_ENABLE_QML=OFF      # Widgets only
-# Both ON by default
+cmake .. -DSCIVISQT_BUILD_TESTS=ON      # build unit tests (not built by default)
+# Both frontends ON by default
 ```
 
 
@@ -61,6 +61,14 @@ python3 generate_presets.py
 ```
 
 Generates 4 preset datasets and models in `data/` and `models/`.
+
+### Run unit tests
+```bash
+make tst_scatterwidget
+make tst_scatterdata
+./tests/tst_scatterwidget
+./tests/tst_scatterdata
+```
 
 ## What's in v0.1
 
@@ -82,14 +90,28 @@ Generates 4 preset datasets and models in `data/` and `models/`.
 - CMake options to enable/disable each frontend independently
 - Precompiled headers for LibTorch
 
+## What's in v0.3
+
+- Unit tests (QTest) — coordinate transforms, grid size, predict robustness, data loading
+- QML frontend refactored: Canvas/JavaScript replaced by QQuickPaintedItem (ScatterViewBase)
+- ScatterView.qml — public QML component with title and legend as declarative elements
+
+## Known limitations
+
+- Window positioning may not work correctly under WSL/X11
+- QML Text color rendering may be incorrect on some WSL/X11 configurations depending on Qt version and graphics driver
+
 ## Roadmap
+
+- Additional unit tests (ScatterViewBase, numClasses)
 - Precise decision boundary (binary search + path propagation)
-- Dynamic grid resolution and window resizing
-- Multi-class support (3+ classes)
-- `setRange()` for configurable axis bounds
-- `classColor()` for extensible class-to-color mapping
-- Unit tests (QTest) : coordinate transforms, grid computation
 - C++ data generation and model training (no Python at runtime)
+- Configurable axis bounds (setRange())
+- Window resizing support
+- QRegion partial invalidation in paintEvent
+- Load QML from disk in development mode
+- Qt Creator integration
+
 
 ## License
 
